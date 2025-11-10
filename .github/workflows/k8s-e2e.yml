@@ -1,0 +1,52 @@
+name: E2E Kubernetes Test (Kind)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.8.0
+        with:
+          cluster_name: e2e
+
+      - name: Apply manifests and set image
+        run: |
+          kubectl apply -k k8s/
+          kubectl set image deployment/k8s-course-app app=ghcr.io/${{ github.repository_owner }}/k8s-course-app:latest
+          kubectl rollout status deployment/k8s-course-app --timeout=180s
+
+      - name: Collect cluster info and app responses
+        run: |
+          kubectl get nodes -o wide > nodes.txt
+          kubectl get all -o wide > k8s_get_all.txt
+          kubectl describe deployment k8s-course-app > deployment_desc.txt
+          kubectl describe svc k8s-course-app > service_desc.txt
+          # Port-forward and curl the endpoints
+          kubectl port-forward svc/k8s-course-app 8080:80 >/dev/null 2>&1 &
+          sleep 5
+          curl -s http://localhost:8080/ > app_response.json
+          curl -s http://localhost:8080/healthz > healthz.txt
+          curl -s http://localhost:8080/readyz > readyz.txt
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: k8s-e2e-artifacts
+          path: |
+            nodes.txt
+            k8s_get_all.txt
+            deployment_desc.txt
+            service_desc.txt
+            app_response.json
+            healthz.txt
+            readyz.txt
