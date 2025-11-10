@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-course-app
+  labels:
+    app: k8s-course-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: k8s-course-app
+  template:
+    metadata:
+      labels:
+        app: k8s-course-app
+    spec:
+      containers:
+        - name: app
+          image: k8s-course-app:0.1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          env:
+            - name: PORT
+              value: "3000"
+          envFrom:
+            - configMapRef:
+                name: app-config
+            - secretRef:
+                name: app-secret
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 3000
+            initialDelaySeconds: 3
+            periodSeconds: 10

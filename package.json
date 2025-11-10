@@ -1,0 +1,13 @@
+{
+  "name": "k8s-course-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Simple Express app for Kubernetes course demos",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
