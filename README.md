@@ -8,6 +8,11 @@ Overview
   - Kubernetes manifests: `Deployment`, `Service`, `ConfigMap`, `Secret`
   - A `kustomization.yaml` to apply all resources together
 
+Submission without committing screenshots
+- If you prefer not to push screenshots to the repo, use the Word-compatible template at `docs/Submission_Template.xml`.
+- Download it, open with Microsoft Word, paste your screenshots under each heading, then Save As `.docx` locally (do not commit).
+- The CI-based validation steps and artifact details are documented in `docs/COURSE_WORK.md`.
+
 Prerequisites (choose one local cluster option)
 - Option A: Docker Desktop with Kubernetes enabled
   - Install Docker Desktop for Windows

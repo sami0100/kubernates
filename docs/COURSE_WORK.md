@@ -2,41 +2,40 @@
 
 This document records the hands-on practice done during the course and links to screenshots stored in `docs/screenshots/`.
 
-## Checklist
-- [ ] Built Docker image: `k8s-course-app:0.1.0`
-- [ ] Started Minikube cluster
-- [ ] Loaded image into Minikube
-- [ ] Applied manifests via `kubectl apply -k k8s/`
-- [ ] Verified pods are running
-- [ ] Exposed service and accessed app URL
-- [ ] Scaled deployment and observed rolling update
+## Checklist (CI/Kubernetes via Kind)
+- [x] Published image to GHCR: `ghcr.io/<owner>/k8s-course-app:latest`
+- [x] Ran E2E workflow that provisions a Kind cluster
+- [x] Applied manifests via `kubectl apply -k k8s/`
+- [x] Set deployment image to GHCR `:latest`
+- [x] Verified rollout and pods running
+- [x] Port-forwarded service and accessed app endpoints
 
-## Commands Used
-Record the commands run and brief notes:
+## Commands Used (from CI run)
+Key commands executed inside the workflow:
 
 ```
-docker build -t k8s-course-app:0.1.0 .
-minikube start
-minikube image load k8s-course-app:0.1.0
 kubectl apply -k k8s/
-kubectl get pods
-minikube service k8s-course-app --url
-kubectl scale deployment k8s-course-app --replicas=3
+kubectl set image deployment/k8s-course-app app=ghcr.io/<owner>/k8s-course-app:latest
+kubectl rollout status deployment/k8s-course-app
+kubectl port-forward svc/k8s-course-app 8080:80
+curl http://localhost:8080/
+curl http://localhost:8080/healthz
+curl http://localhost:8080/readyz
 ```
 
 ## Screenshots
 Place the following screenshot files under `docs/screenshots/` and check them off:
 
-- [ ] `01_minikube_start.png` – Minikube started successfully
-- [ ] `02_image_loaded.png` – Result of `minikube image load`
-- [ ] `03_apply_manifests.png` – Output of `kubectl apply -k k8s/`
-- [ ] `04_pods_running.png` – Output of `kubectl get pods`
-- [ ] `05_service_url.png` – Output of `minikube service k8s-course-app --url`
-- [ ] `06_app_response.png` – Browser JSON from root endpoint
-- [ ] `07_scale_replicas.png` – Output of scale command
-- [ ] `08_rollout_status.png` – Output of `kubectl rollout status deployment/k8s-course-app`
+- [ ] `01_nodes.png` – Content of `nodes.txt`
+- [ ] `02_get_all.png` – Content of `k8s_get_all.txt`
+- [ ] `03_deployment_desc.png` – Content of `deployment_desc.txt`
+- [ ] `04_service_desc.png` – Content of `service_desc.txt`
+- [ ] `05_rollout_status.png` – Rollout status (from CI logs)
+- [ ] `06_app_response.png` – JSON from root endpoint (`app_response.json`)
+- [ ] `07_healthz.png` – `/healthz` response (`healthz.txt`)
+- [ ] `08_readyz.png` – `/readyz` response (`readyz.txt`)
 
 ## Notes
 - Config and secret are in `k8s/configmap.yaml` and `k8s/secret-example.yaml`.
 - Probes: liveness `/healthz`, readiness `/readyz`.
-- Service is ClusterIP; use Minikube `service --url` or `port-forward`.
+- Service is ClusterIP; access via `kubectl port-forward` on port 8080 in CI.
