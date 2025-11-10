@@ -15,6 +15,8 @@ jobs:
     env:
       GHCR_USERNAME: ${{ github.repository_owner }}
       GHCR_PASSWORD: ${{ secrets.GHCR_TOKEN }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -61,3 +63,32 @@ jobs:
         run: |
           echo "Pushed: ${{ steps.meta.outputs.tags }}"
           echo "Use image: ghcr.io/${{ github.repository_owner }}/k8s-course-app:0.1.0"
+
+      # Optional: also push to Docker Hub if credentials are provided
+      - name: Log in to Docker Hub
+        if: ${{ env.DOCKERHUB_TOKEN != '' }}
+        uses: docker/login-action@v3
+        with:
+          registry: docker.io
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ env.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata for Docker Hub
+        if: ${{ env.DOCKERHUB_TOKEN != '' }}
+        id: meta_dh
+        uses: docker/metadata-action@v5
+        with:
+          images: docker.io/${{ env.DOCKERHUB_USERNAME }}/k8s-course-app
+          tags: |
+            type=raw,value=0.1.0
+            type=raw,value=latest
+            type=sha
+
+      - name: Build and push to Docker Hub
+        if: ${{ env.DOCKERHUB_TOKEN != '' }}
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta_dh.outputs.tags }}
+          labels: ${{ steps.meta_dh.outputs.labels }}
