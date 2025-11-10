@@ -16,8 +16,8 @@ spec:
     spec:
       containers:
         - name: app
-          image: k8s-course-app:0.1.0
-          imagePullPolicy: IfNotPresent
+          image: ghcr.io/sami0100/k8s-course-app:0.1.0
+          imagePullPolicy: Always
           ports:
             - containerPort: 3000
           env:
